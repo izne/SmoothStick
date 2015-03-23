@@ -23,8 +23,8 @@
  * Global
  */
 
-char version[8] = "0.67";
-char versionStr[256] = "SmoothStick v0.67 b1";
+char version[8] = "0.69";
+char versionStr[256] = "SmoothStick v0.69 b1";
 
 XPLMWindowID	gWindow = NULL;
 XPLMMenuID      smoothMenu;

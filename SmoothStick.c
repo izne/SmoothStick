@@ -34,7 +34,7 @@ PLUGIN_API int XPluginStart(
 
     gWindow = XPLMCreateWindow(
                     50, 700, 300, 600,			/* Area of the window. */
-                    0,							/* Start visible. */
+                    1,							/* Start visible. */
                     DrawWindowCallback,			/* Callbacks */
                     KeyCallback,
                     MouseClickCallback,
@@ -47,11 +47,12 @@ PLUGIN_API int XPluginStart(
                         1);						// Force English
 
     smoothMenu = XPLMCreateMenu(
-                        NULL,
+                        "SmoothStick",
                         XPLMFindPluginsMenu(),
                         smoothSubMenuItem, 			// Menu Item to attach to.
                         smoothMenuHandlerCallback,	// The handler
                         0);						// Handler Ref
+
 
      // For each command, we set the item refcon to be the key command ID we wnat
      // to run.   Our callback will use this item refcon to do the right command.
@@ -116,6 +117,7 @@ void DrawWindowCallback(
         versionStr, NULL, xplmFont_Basic);
 
 
+    // processing code
     XPLMGetDatavi(XPLMFindDataRef("sim/joystick/joystick_axis_assignments"), AxisType, 0, 100);
     XPLMGetDatavf(XPLMFindDataRef("sim/joystick/joystick_axis_values"), AxisValue, 0, 100);
     FindAxis(AxisType, &idxElvAxis, &idxAilAxis);
@@ -124,61 +126,8 @@ void DrawWindowCallback(
     pitchValue = (AxisValue[idxElvAxis] - 0.5f) * 2.0f;
     rollValue =  (AxisValue[idxAilAxis] - 0.5f) * 2.0f;
 
-
-    // void SmoothenPitch();
-    if (sPitchValue != pitchValue)
-    {
-        if (pitchValue > 0.0f) // DEFLECTING UP
-        {
-            if(sPitchValue < pitchValue)
-            {
-                sPitchValue += smoothStepPitch; // FURTHER UP
-            } else {
-                sPitchValue -= smoothStepPitch; // BACK TO CENTER
-            }
-
-            if (sPitchValue > pitchValue) sPitchValue = pitchValue;
-        }
-        else // DEFLECTING DOWN
-        {
-            if(sPitchValue > pitchValue)
-            {
-                sPitchValue -= smoothStepPitch; // FURTHER DOWN
-            } else {
-                sPitchValue += smoothStepPitch; // BACK TO CENTER
-            }
-
-            if (sPitchValue < pitchValue) sPitchValue = pitchValue;
-        }
-    }
-
-    // void SmoothenRoll(sRollValue, rollValue);
-    if (sRollValue != rollValue)
-    {
-        if (rollValue > 0.0f) // DEFLECTING RIGHT
-        {
-            if(sRollValue < rollValue)
-            {
-                sRollValue += smoothStepRoll; // FURTHER RIGHT
-            } else {
-                sRollValue -= smoothStepRoll; // BACK TO CENTER
-            }
-
-            if (sRollValue > rollValue) sRollValue = rollValue;
-        }
-
-        if (rollValue < 0.0f) // DEFLECTING LEFT
-        {
-            if(sRollValue > rollValue)
-            {
-                sRollValue -= smoothStepRoll; // FURTHER LEFT
-            } else {
-                sRollValue += smoothStepRoll; // BACK TO CENTER
-            }
-
-            if (sRollValue < rollValue) sRollValue = rollValue;
-        }
-    }
+    SmoothenPitch(&pitchValue, &sPitchValue, &smoothStepPitch);
+    SmoothenRoll(&rollValue, &sRollValue, &smoothStepRoll);
 
     XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_pitch_ratio"), sPitchValue);
     XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_roll_ratio"), sRollValue);
