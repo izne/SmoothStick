@@ -17,14 +17,18 @@
 #include "XPLMProcessing.h"
 #include "XPLMMenus.h"
 #include "XPLMUtilities.h"
+
 #include "SPU.h"
+
+
+
 
 /*
  * Global
  */
 
 char version[8] = "0.69";
-char versionStr[256] = "SmoothStick v0.69 b1";
+char versionStr[256] = "SmoothStick v0.69";
 
 XPLMWindowID	gWindow = NULL;
 XPLMMenuID      smoothMenu;

@@ -47,7 +47,7 @@ PLUGIN_API int XPluginStart(
                         1);						// Force English
 
     smoothMenu = XPLMCreateMenu(
-                        "SmoothStick",
+                        "",
                         XPLMFindPluginsMenu(),
                         smoothSubMenuItem, 			// Menu Item to attach to.
                         smoothMenuHandlerCallback,	// The handler
