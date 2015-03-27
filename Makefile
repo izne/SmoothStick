@@ -12,7 +12,7 @@ MAKEFILE      = Makefile
 
 CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-DEFINES       = -DXPLM210 -DAPL=1 -DIBM=0 -DLIN=0
+DEFINES       = -DXPLM200 -DXPLM210 -DAPL=1 -DIBM=0 -DLIN=0
 CFLAGS        = -pipe -O2 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -Wall -W -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -Wall -W -fPIC $(DEFINES)
 INCPATH       = -I../../Qt54/5.4/clang_64/mkspecs/macx-clang -I. -I../SDK/CHeaders/XPLM -I../SDK/CHeaders/Wrappers -I../SDK/CHeaders/Widgets
@@ -510,23 +510,18 @@ compiler_clean:
 ####### Compile
 
 SmoothStick.o: SmoothStick.c SmoothStick.h \
-		../SDK/CHeaders/XPLM/XPLMDisplay.h \
 		../SDK/CHeaders/XPLM/XPLMDefs.h \
-		../SDK/CHeaders/XPLM/XPLMGraphics.h \
+		../SDK/CHeaders/XPLM/XPLMPlanes.h \
+		../SDK/CHeaders/XPLM/XPLMCamera.h \
 		../SDK/CHeaders/XPLM/XPLMDataAccess.h \
-		../SDK/CHeaders/XPLM/XPLMProcessing.h \
+		../SDK/CHeaders/XPLM/XPLMUtilities.h \
+		../SDK/CHeaders/XPLM/XPLMGraphics.h \
+		../SDK/CHeaders/XPLM/XPLMDisplay.h \
 		../SDK/CHeaders/XPLM/XPLMMenus.h \
-		../SDK/CHeaders/XPLM/XPLMUtilities.h
+		SPU.h
 	$(CC) -c $(CFLAGS) $(INCPATH) -o SmoothStick.o SmoothStick.c
 
-SPU.o: SPU.c SmoothStick.h \
-		../SDK/CHeaders/XPLM/XPLMDisplay.h \
-		../SDK/CHeaders/XPLM/XPLMDefs.h \
-		../SDK/CHeaders/XPLM/XPLMGraphics.h \
-		../SDK/CHeaders/XPLM/XPLMDataAccess.h \
-		../SDK/CHeaders/XPLM/XPLMProcessing.h \
-		../SDK/CHeaders/XPLM/XPLMMenus.h \
-		../SDK/CHeaders/XPLM/XPLMUtilities.h
+SPU.o: SPU.c SPU.h
 	$(CC) -c $(CFLAGS) $(INCPATH) -o SPU.o SPU.c
 
 ####### Install

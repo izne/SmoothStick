@@ -9,14 +9,18 @@
 
 
 #include <stdio.h>
-#include <string.h>
 
-#include "XPLMDisplay.h"
-#include "XPLMGraphics.h"
+#include "XPLMDefs.h"
+#include "XPLMPlanes.h"
+#include "XPLMCamera.h"
+
+
 #include "XPLMDataAccess.h"
-#include "XPLMProcessing.h"
-#include "XPLMMenus.h"
 #include "XPLMUtilities.h"
+#include "XPLMGraphics.h"
+#include "XPLMDisplay.h"
+#include "XPLMMenus.h"
+#include "XPLMProcessing.h"
 
 #include "SPU.h"
 
@@ -27,11 +31,12 @@
  * Global
  */
 
-char version[8] = "0.69";
-char versionStr[256] = "SmoothStick v0.69";
+char version[8] = "0.71";
+char versionStr[256] = "SmoothStick v0.71";
 
 XPLMWindowID	gWindow = NULL;
 XPLMMenuID      smoothMenu;
+XPLMCommandRef  SmoothBreakingCommand = NULL;
 int             smoothSubMenuItem;
 
 char            pitchLabel[256], rollLabel[256];
@@ -50,19 +55,22 @@ float           AxisValue[100];
 int             idxAilAxis, idxElvAxis;
 
 
-/*
-XPLMCommandRef SmoothStickCommand = NULL;
+int TOGGLE = 1;
+int VISIBLE = 1;
+int DEBUG = 1;
 
-int	SmoothStickCommandHandler(
+
+float SmoothLoopCallback(float elapsedMe, float elapsedSim, int counter, void * refcon);
+
+int	SmoothBreakingCommandHandler(
         XPLMCommandRef    	inCommand,
         XPLMCommandPhase  	inPhase,
         void *            	inRefcon);
-*/
 
 
 static void DrawWindowCallback(
-                                   XPLMWindowID         inWindowID,
-                                   void *               inRefcon);  
+        XPLMWindowID         inWindowID,
+        void *               inRefcon);
 
 void	smoothMenuHandlerCallback(
                                    void *               inMenuRef,
