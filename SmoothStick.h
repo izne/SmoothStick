@@ -1,7 +1,7 @@
 /*
- * SmoothStick.c
+ * SmoothStick.h
  *
- * Dimitar Angelov <funkamateur@gmail.com>
+ * Dimitar Angelov
  * Hamburg, Deutschland
  * März 2015
  */
@@ -31,12 +31,13 @@
  * Global
  */
 
-char version[8] = "0.71";
-char versionStr[256] = "SmoothStick v0.71";
+char version[8] = "0.72";
+char versionStr[256] = "SPU v0.72";
 
 XPLMWindowID	gWindow = NULL;
 XPLMMenuID      smoothMenu;
-XPLMCommandRef  SmoothBreakingCommand = NULL;
+XPLMCommandRef  SmoothBreakCommand = NULL;
+
 int             smoothSubMenuItem;
 
 char            pitchLabel[256], rollLabel[256];
@@ -52,17 +53,18 @@ float           smoothStepRoll              = 0.005f; //0.02f
 
 int             AxisType[100];
 float           AxisValue[100];
-int             idxAilAxis, idxElvAxis;
+int             idxAilAxis = 2;
+int             idxElvAxis = 3;
 
 
-int TOGGLE = 1;
-int VISIBLE = 1;
-int DEBUG = 1;
+int G_TOGGLE = 1;
+int G_VISIBLE = 1;
+int G_DEBUG = 0;
 
 
 float SmoothLoopCallback(float elapsedMe, float elapsedSim, int counter, void * refcon);
 
-int	SmoothBreakingCommandHandler(
+int	SmoothBreakCommandHandler(
         XPLMCommandRef    	inCommand,
         XPLMCommandPhase  	inPhase,
         void *            	inRefcon);

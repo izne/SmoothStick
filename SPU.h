@@ -1,9 +1,9 @@
 /*
- * SPU.c
+ * SPU.h
  * Smooth Processing Unit
- * Part of SmoothStick X-Plane plugin
+ * Part of SPU X-Plane plugin
  *
- * Dimitar Angelov <funkamateur@gmail.com>
+ * Dimitar Angelov
  * Hamburg, Deutschland
  * März 2015
  */
@@ -12,7 +12,6 @@
 #define SPU_H
 
 void FindAxis(int axisType[100], int *indexElevatorAxis, int *indexAileronAxis);
-void SmoothenPitch(float *pitchValue, float *sPitchValue, float *smoothStepPitch);
-void SmoothenRoll(float *rollValue, float *sRollValue, float *smoothStepRoll);
+void SmoothenValue(float *rawValue, float *smoothValue, float *smoothStep);
 
 #endif // SPU_H

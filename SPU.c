@@ -1,73 +1,46 @@
 /*
  * SPU.c
  * Smooth Processing Unit
- * Part of SmoothStick X-Plane plugin
+ * Part of SPU X-Plane plugin
  *
- * Dimitar Angelov <funkamateur@gmail.com>
+ * Dimitar Angelov
  * Hamburg, Deutschland
  * März 2015
  */
 
 #include "SPU.h"
 
-void SmoothenRoll(float *rollValue, float *sRollValue, float *smoothStepRoll)
+
+void SmoothenValue(float *rawValue, float *smoothValue, float *smoothStep)
 {
-    if (*sRollValue != *rollValue)
+    if (*smoothValue != *rawValue)
     {
-        if (*rollValue > 0.0f) // DEFLECTING RIGHT
+        if (*rawValue > 0.0f) // DEFLECTING RIGHT
         {
-            if(*sRollValue < *rollValue)
+            if(*smoothValue < *rawValue)
             {
-                *sRollValue += *smoothStepRoll; // FURTHER RIGHT
+                *smoothValue += *smoothStep; // FURTHER RIGHT
             } else {
-                *sRollValue -= *smoothStepRoll; // BACK TO CENTER
+                *smoothValue -= *smoothStep; // BACK TO CENTER
             }
 
-            if (*sRollValue > *rollValue) *sRollValue = *rollValue;
+            if (*smoothValue > *rawValue) *smoothValue = *rawValue;
         }
 
-        if (*rollValue < 0.0f) // DEFLECTING LEFT
+        if (*rawValue < 0.0f) // DEFLECTING LEFT
         {
-            if(*sRollValue > *rollValue)
+            if(*smoothValue > *rawValue)
             {
-                *sRollValue -= *smoothStepRoll; // FURTHER LEFT
+                *smoothValue -= *smoothStep; // FURTHER LEFT
             } else {
-                *sRollValue += *smoothStepRoll; // BACK TO CENTER
+                *smoothValue += *smoothStep; // BACK TO CENTER
             }
 
-            if (*sRollValue < *rollValue) *sRollValue = *rollValue;
+            if (*smoothValue < *rawValue) *smoothValue = *rawValue;
         }
     }
 }
 
-void SmoothenPitch(float *pitchValue, float *sPitchValue, float *smoothStepPitch)
-{
-    if (*sPitchValue != *pitchValue)
-    {
-        if (*pitchValue > 0.0f) // DEFLECTING UP
-        {
-            if(*sPitchValue < *pitchValue)
-            {
-                *sPitchValue += *smoothStepPitch; // FURTHER UP
-            } else {
-                *sPitchValue -= *smoothStepPitch; // BACK TO CENTER
-            }
-
-            if (*sPitchValue > *pitchValue) *sPitchValue = *pitchValue;
-        }
-        else // DEFLECTING DOWN
-        {
-            if(*sPitchValue > *pitchValue)
-            {
-                *sPitchValue -= *smoothStepPitch; // FURTHER DOWN
-            } else {
-                *sPitchValue += *smoothStepPitch; // BACK TO CENTER
-            }
-
-            if (*sPitchValue < *pitchValue) *sPitchValue = *pitchValue;
-        }
-    }
-}
 
 void FindAxis(int axisType[100], int *indexElevatorAxis, int *indexAileronAxis)
 {

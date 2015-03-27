@@ -1,7 +1,7 @@
 /*
  * SmoothStick.c
  *
- * Dimitar Angelov <funkamateur@gmail.com>
+ * Dimitar Angelov
  * Hamburg, Deutschland
  * März 2015
  */
@@ -15,44 +15,42 @@ PLUGIN_API int XPluginStart(
                         char *		outDesc)
 {
     sprintf(outName, "SmoothStick");
-    sprintf(outSig,  "angelov.SmoothStick");
+    sprintf(outSig,  "angelov.SPU");
     sprintf(outDesc, "A plugin that smoothens the input of the joystick and adds progressive braking.");
 
     XPLMRegisterFlightLoopCallback(SmoothLoopCallback, -1, NULL); // FIXME: called back each second
 
-    /* SmoothBreaking
-    SmoothStickCommand = XPLMCreateCommand(
-                "sim/joystick/smoothstick_enable",
-                "Smoothen joystick input"
+    SmoothBreakCommand = XPLMCreateCommand(
+                "sim/joystick/smoothbreak_enable",
+                "Smooth breaking action"
                 );
 
-
     XPLMRegisterCommandHandler(
-                SmoothStickCommand,
-                SmoothStickCommandHandler,
+                SmoothBreakCommand,
+                SmoothBreakCommandHandler,
                 0,
                 NULL);
-                */
+
 
 
     gWindow = XPLMCreateWindow(
-                    50, 700, 300, 600,			/* Area of the window. */
+                    50, 700, 300, 600,			/* initial Area of the window. */
                     0,							/* Start visible. */
                     DrawWindowCallback,			/* Callbacks */
                     KeyCallback,
                     MouseClickCallback,
                     NULL);						/* Refcon - not used. */
 
-   XPLMSetWindowIsVisible(gWindow, VISIBLE);
+    XPLMSetWindowIsVisible(gWindow, G_VISIBLE);
 
     smoothSubMenuItem = XPLMAppendMenuItem(
                         XPLMFindPluginsMenu(),
-                        "SmoothStick",
-                        0,						// Item Ref
-                        1);						// Force English
+                        "SPU",
+                        0,
+                        1);
 
     smoothMenu = XPLMCreateMenu(
-                        "SmoothStick",
+                        "SPU",
                         XPLMFindPluginsMenu(),
                         smoothSubMenuItem, 			// Menu Item to attach to.
                         smoothMenuHandlerCallback,	// The handler
@@ -60,11 +58,8 @@ PLUGIN_API int XPluginStart(
 
 
     XPLMAppendMenuItem(smoothMenu, "Toggle", (void *)0, 1);
-    XPLMAppendMenuItem(smoothMenu, "Debug window", (void *)1, 1);
-    XPLMAppendMenuItem(smoothMenu, "Settings", (void *)2, 1);
-
-    idxElvAxis = 2;
-    idxAilAxis = 3;
+    XPLMAppendMenuItem(smoothMenu, "Infowindow", (void *)1, 1);
+    XPLMAppendMenuItem(smoothMenu, "Debug", (void *)2, 1);
 
     return 1;
 }
@@ -73,22 +68,22 @@ PLUGIN_API int XPluginStart(
 PLUGIN_API void	XPluginStop(void)
 {
     XPLMDestroyWindow(gWindow);
-    XPLMUnregisterCommandHandler(SmoothBreakingCommand, SmoothBreakingCommandHandler, 0, 0);
+    XPLMUnregisterCommandHandler(SmoothBreakCommand, SmoothBreakCommandHandler, 0, 0);
+    XPLMUnregisterFlightLoopCallback(SmoothLoopCallback, NULL);
 }
 
 
 PLUGIN_API void XPluginDisable(void)
 {
-    XPLMDebugString("SmoothStick> Stopping plugin.\n");
+    //XPLMDebugString("SmoothStick> Stopping plugin.\n");
     XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 0);
 }
 
 
 PLUGIN_API int XPluginEnable(void)
 {
-    XPLMDebugString("SmoothStick> Starting plugin.\n");
-    XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
-
+    //XPLMDebugString("SmoothStick> Starting plugin.\n");
+    if (G_TOGGLE) XPLMSetDatai(XPLMFindDataRef("sim/operation/override/override_joystick"), 1);
     XPLMGetDatavi(XPLMFindDataRef("sim/joystick/joystick_axis_assignments"), AxisType, 0, 100);
     FindAxis(AxisType, &idxElvAxis, &idxAilAxis);
 
@@ -117,26 +112,33 @@ float SmoothLoopCallback(float elapsedMe, float elapsedSim, int counter, void * 
     (void)counter;
     (void)refcon;
 
-    XPLMSetWindowIsVisible(gWindow, VISIBLE);
+    XPLMSetWindowIsVisible(gWindow, G_VISIBLE);
 
-    /******* processing code *******/
+    /******* axis data processing *******/
     XPLMGetDatavf(XPLMFindDataRef("sim/joystick/joystick_axis_values"), AxisValue, 0, 100);
     // FIXME: when released, jumps to 0 (center)
     pitchValue = (AxisValue[idxElvAxis] - 0.5f) * 2.0f;
     rollValue =  (AxisValue[idxAilAxis] - 0.5f) * 2.0f;
 
-    SmoothenPitch(&pitchValue, &sPitchValue, &smoothStepPitch);
-    SmoothenRoll(&rollValue, &sRollValue, &smoothStepRoll);
+    SmoothenValue(&pitchValue, &sPitchValue, &smoothStepPitch);
+    SmoothenValue(&rollValue, &sRollValue, &smoothStepRoll);
 
-    XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_pitch_ratio"), sPitchValue);
-    XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_roll_ratio"), sRollValue);
+    if (G_TOGGLE)
+    {
+        XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_pitch_ratio"), sPitchValue);
+        XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_roll_ratio"), sRollValue);
+    } else {
+        XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_pitch_ratio"), pitchValue);
+        XPLMSetDataf(XPLMFindDataRef("sim/joystick/yoke_roll_ratio"), rollValue);
+    }
+
     /************/
 
-    return 1;
+    return -1;
 }
 
 
-int	SmoothBreakingCommandHandler(XPLMCommandRef     inCommand,
+int	SmoothBreakCommandHandler(XPLMCommandRef     inCommand,
                               XPLMCommandPhase   inPhase,
                               void *             inRefcon)
 {
@@ -176,15 +178,29 @@ void DrawWindowCallback(
     XPLMDrawString(colorMagenta, left + 5, top - 20,
         versionStr, NULL, xplmFont_Basic);
 
-    sprintf(pitchLabel, "pitch: %f", pitchValue);
-    sprintf(rollLabel,  "roll: %f",  rollValue);
-    sprintf(sPitchLabel, "smooth pitch: %f", sPitchValue);
-    sprintf(sRollLabel,  "smooth roll: %f",  sRollValue);
-    if(DEBUG)
+    if(G_DEBUG)
     {
-        sprintf(axisDebug,  "axis%d: %f :: axis%d: %f",
+        sprintf(pitchLabel,     "Input pitch: %f", pitchValue);
+        sprintf(rollLabel,      "Input roll: %f",  rollValue);
+        sprintf(sPitchLabel,    "Output pitch: %f", sPitchValue);
+        sprintf(sRollLabel,     "Output roll: %f",  sRollValue);
+        sprintf(axisDebug,      "Axis[%d]: %f - Axis[%d]: %f",
                 idxAilAxis, (float)AxisValue[idxAilAxis],
-                idxAilAxis, (float)AxisValue[idxElvAxis]);
+                idxElvAxis, (float)AxisValue[idxElvAxis]);
+    } else {
+        sprintf(sPitchLabel, "");
+        sprintf(sRollLabel, "");
+        sprintf(axisDebug, "");
+
+        if (G_TOGGLE)
+        {
+            sprintf(pitchLabel, "Sidestick: ON");
+            sprintf(rollLabel,  "Breaking : ON");
+        } else {
+            sprintf(pitchLabel, "Sidestick: OFF");
+            sprintf(rollLabel,  "Breaking : OFF");
+        }
+
     }
 
     XPLMDrawString(colorWhite, left + 5, top - 35, pitchLabel, NULL, xplmFont_Basic);
@@ -196,30 +212,29 @@ void DrawWindowCallback(
 
 
 
-void	smoothMenuHandlerCallback(
-                                   void *               inMenuRef,
-                                   void *               inItemRef)
+void smoothMenuHandlerCallback(
+        void *               inMenuRef,
+        void *               inItemRef)
 {
-    /* This is the menu callback.  We simply turn the item ref back
-     * into a command ID and tell the sim to do it. */
     (void)inMenuRef;
-    if (inItemRef == 0)
+    if (inItemRef == (void *)1)
     {
-        XPLMDebugString("SmoothStick> Menu item 0 selected.\n");
-        if (VISIBLE) { VISIBLE = 0; } else { VISIBLE = 1; }
+        XPLMDebugString("SmoothStick> Debug window visibility toggle.\n");
+        if (G_VISIBLE) { G_VISIBLE = 0; } else { G_VISIBLE = 1; }
+    }
+
+    if (inItemRef == (void *)0)
+    {
+        XPLMDebugString("SmoothStick> SPU active toggle.\n");
+        if (G_TOGGLE) { G_TOGGLE = 0; } else { G_TOGGLE = 1; }
+    }
+
+    if (inItemRef == (void *)2)
+    {
+        XPLMDebugString("SmoothStick> Axis debug info toggle.\n");
+        if (G_DEBUG) { G_DEBUG = 0; } else { G_DEBUG = 1; }
     }
 }
-
-
-/*
-int	SmoothStickCommandHandler(
-        XPLMCommandRef      inCommand,
-        XPLMCommandPhase    inPhase,
-        void *   			inRefcon)
-{
-    return 0;
-}
-*/
 
 
 
